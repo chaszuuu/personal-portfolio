@@ -67,7 +67,7 @@ export function Projects() {
         'Organized academic content',
         'Clean navigation',
       ],
-      link: '',
+      link: 'https://collegeofcomputingstudiespsu.vercel.app/',
       buttonText: 'Visit Website',
     },
     {
