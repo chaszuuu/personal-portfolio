@@ -1,54 +1,27 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
 import { Moon, Sun } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export function ThemeToggle() {
-  const [isDark, setIsDark] = useState(true);
+  const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    const root = document.documentElement;
-    const initialDark = root.classList.contains('dark');
-    setIsDark(initialDark);
+  useEffect(() => setMounted(true), []);
 
-    const observer = new MutationObserver(() => {
-      setIsDark(root.classList.contains('dark'));
-    });
-
-    observer.observe(root, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
-  }, []);
-
-  const toggleTheme = () => {
-    const root = document.documentElement;
-    if (root.classList.contains('dark')) {
-      root.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-      setIsDark(false);
-    } else {
-      root.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-      setIsDark(true);
-    }
-  };
-
-  if (!mounted) {
-    return <div className="w-9 h-9" />;
-  }
+  if (!mounted) return <div className="w-8 h-8" aria-hidden />;
 
   return (
     <button
-      onClick={toggleTheme}
-      className="p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors duration-300"
-      aria-label="Toggle theme"
+      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+      className="w-8 h-8 rounded-md border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
     >
-      {isDark ? (
-        <Sun className="w-5 h-5 transition-transform duration-300" />
-      ) : (
-        <Moon className="w-5 h-5 transition-transform duration-300" />
-      )}
+      {theme === 'dark'
+        ? <Sun className="w-3.5 h-3.5" />
+        : <Moon className="w-3.5 h-3.5" />
+      }
     </button>
   );
 }

@@ -1,257 +1,155 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Terminal, X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { X, ExternalLink, ShieldCheck } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { FadeInView } from './fade-in-view';
+
+interface Certification {
+  title: string;
+  provider: string;
+  date: string;
+  image: string;
+  link?: string;
+}
+
+const CERTIFICATIONS: Certification[] = [
+  {
+    title: 'Cybersecurity Fundamentals',
+    provider: 'Palo Alto Networks',
+    date: 'Sep 21, 2024',
+    image: 'img/cert_1.jpg',
+  },
+  {
+    title: 'Network Security Fundamentals',
+    provider: 'Palo Alto Networks',
+    date: 'Sep 22, 2024',
+    image: 'img/cert_2.jpg',
+  },
+  {
+    title: 'Security Operations Fundamentals',
+    provider: 'Palo Alto Networks',
+    date: 'Sep 26, 2024',
+    image: 'img/cert_3.jpg',
+  },
+  {
+    title: 'Cloud Security Fundamentals',
+    provider: 'Palo Alto Networks',
+    date: 'Sep 25, 2024',
+    image: 'img/cert_4.jpg',
+  },
+];
 
 export function Certifications() {
-  const [selectedCert, setSelectedCert] = useState<number | null>(null);
-  const [currentPage, setCurrentPage] = useState(0);
+  const [selected, setSelected] = useState<number | null>(null);
+  const close = useCallback(() => setSelected(null), []);
 
-  const certifications = [
-    {
-      title: 'Cybersecurity Fundamentals',
-      provider: 'Palo Alto Networks',
-      date: '09/21/2024',
-      image: 'img/cert_1.jpg',
-    },
-    {
-      title: 'Network Security Fundamentals',
-      provider: 'Palo Alto Networks',
-      date: '09/22/2024',
-      image: 'img/cert_2.jpg',
-    },
-    {
-      title: 'Security Operations Fundamentals',
-      provider: 'Palo Alto Networks',
-      date: '09/26/2024',
-      image: 'img/cert_3.jpg',
-    },
-    {
-      title: 'Cloud Security Fundamentals',
-      provider: 'Palo Alto Networks',
-      date: '09/25/2024',
-      image: 'img/cert_4.jpg',
-    },
-  ];
+  useEffect(() => {
+    document.body.style.overflow = selected !== null ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [selected]);
 
-  const totalCertificates = certifications.length;
-  const currentCert = certifications[currentPage];
-
-  const nextPage = () => {
-    setCurrentPage((prev) => (prev + 1) % totalCertificates);
-  };
-
-  const prevPage = () => {
-    setCurrentPage((prev) => (prev - 1 + totalCertificates) % totalCertificates);
-  };
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [close]);
 
   return (
     <>
-      <section id="certifications" className="relative flex items-center py-20 sm:py-24 px-4 sm:px-6 min-h-fit">
-        <div className="max-w-4xl mx-auto w-full">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: false }}
-            className="mb-8 sm:mb-10"
-          >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground text-balance">
+      <section id="certifications" className="py-24 sm:py-32 border-t border-border">
+        <div className="max-w-5xl mx-auto px-6">
+          <FadeInView>
+            <p className="sec-label">Credentials</p>
+            <h2 className="text-4xl sm:text-5xl font-display font-normal tracking-tight text-foreground mb-12">
               Certifications
             </h2>
-          </motion.div>
+          </FadeInView>
 
-          {/* Single Terminal Window - Wider */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            viewport={{ once: false }}
-            className="space-y-6"
-          >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentPage}
-                initial={{ opacity: 0, x: 100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -100 }}
-                transition={{ duration: 0.5 }}
-                className="rounded-2xl overflow-hidden border border-violet-500/20 bg-black/40 backdrop-blur-sm cursor-pointer hover:border-violet-500/40 transition-colors"
-                onClick={() => setSelectedCert(currentPage)}
-              >
-                {/* Terminal Header */}
-                <div className="flex items-center gap-2 px-4 py-3 bg-violet-950/30 border-b border-violet-500/20">
-                  <div className="flex gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                    <div className="w-3 h-3 rounded-full bg-green-500/80" />
-                  </div>
-                  <div className="flex items-center gap-2 ml-2">
-                    <Terminal className="w-3 h-3 text-foreground/60" />
-                    <span className="text-xs font-mono text-foreground/60">
-                      ~/charlesvincent/cert-{currentPage + 1}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Terminal Content */}
-                <div className="p-6 sm:p-8 font-mono text-xs sm:text-sm space-y-4">
-                  {/* Command */}
-                  <div className="flex items-start gap-2">
-                    <span className="text-violet-400">$</span>
-                    <span className="text-green-400">cat certificate.json</span>
-                  </div>
-
-                  {/* Terminal Output - Certificate as JSON-like format */}
-                  <div className="pl-4 space-y-3 text-foreground/80">
-                    <div className="text-foreground/60">{"{"}</div>
-
-                    <div className="pl-4 space-y-2">
-                      {/* Certificate Title */}
-                      <div className="flex items-start gap-2">
-                        <span className="text-cyan-400">"title"</span>
-                        <span className="text-foreground/60">:</span>
-                        <span className="text-yellow-400 flex-1 break-words">"{currentCert.title}"</span>
-                        <span className="text-foreground/60">,</span>
-                      </div>
-
-                      {/* Provider */}
-                      <div className="flex items-start gap-2">
-                        <span className="text-cyan-400">"provider"</span>
-                        <span className="text-foreground/60">:</span>
-                        <span className="text-yellow-400">"{currentCert.provider}"</span>
-                        <span className="text-foreground/60">,</span>
-                      </div>
-
-                      {/* Date */}
-                      <div className="flex items-start gap-2">
-                        <span className="text-cyan-400">"date"</span>
-                        <span className="text-foreground/60">:</span>
-                        <span className="text-yellow-400">"{currentCert.date}"</span>
-                        <span className="text-foreground/60">,</span>
-                      </div>
-
-                      {/* View Action */}
-                      <div className="flex items-start gap-2">
-                        <span className="text-cyan-400">"action"</span>
-                        <span className="text-foreground/60">:</span>
-                        <span className="text-green-400">"click_to_view"</span>
-                      </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {CERTIFICATIONS.map((cert, i) => (
+              <FadeInView key={cert.title} delay={i * 0.07}>
+                <motion.div
+                  whileHover={{ y: -3 }}
+                  onClick={() => setSelected(i)}
+                  className="group relative rounded-xl border border-border bg-card hover:border-ring/50 hover:shadow-md transition-all duration-300 cursor-pointer p-5"
+                >
+                  <div className="flex items-start gap-4">
+                    {/* Badge icon */}
+                    <div className="w-10 h-10 rounded-lg border border-border bg-background flex items-center justify-center shrink-0">
+                      <ShieldCheck className="w-5 h-5 text-muted-foreground" />
                     </div>
 
-                    <div className="text-foreground/60">{"}"}</div>
+                    <div className="flex-1 min-w-0">
+                      {/* Provider */}
+                      <p className="font-mono text-[0.6rem] tracking-wider text-muted-foreground uppercase mb-1 flex items-center justify-between">
+                        {cert.provider}
+                        <span className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          <ExternalLink className="w-3 h-3" />
+                        </span>
+                      </p>
+
+                      {/* Title */}
+                      <h3 className="text-sm font-semibold text-foreground tracking-tight leading-snug mb-1">
+                        {cert.title}
+                      </h3>
+
+                      {/* Date */}
+                      <p className="font-mono text-[0.6rem] text-muted-foreground">{cert.date}</p>
+                    </div>
                   </div>
-
-                  {/* Success Message */}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="pt-2 flex items-center gap-2 text-green-400"
-                  >
-                    <span>✓</span>
-                    <span>Certificate loaded</span>
-                  </motion.div>
-
-                  {/* Cursor */}
-                  <div className="flex items-start gap-2 pt-2">
-                    <span className="text-violet-400">$</span>
-                    <span className="text-foreground/60 animate-pulse">▊</span>
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-
-            {/* Pagination Controls */}
-            {totalCertificates > 1 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="flex items-center justify-center gap-4"
-              >
-                <button
-                  onClick={prevPage}
-                  className="p-2 rounded-lg bg-violet-500/20 hover:bg-violet-500/30 border border-violet-500/30 transition-colors"
-                  aria-label="Previous certificate"
-                >
-                  <ChevronLeft className="w-5 h-5 text-violet-400" />
-                </button>
-
-                <div className="flex items-center gap-2">
-                  {Array.from({ length: totalCertificates }).map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentPage(index)}
-                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                        index === currentPage
-                          ? 'bg-violet-400 w-8'
-                          : 'bg-violet-500/30 hover:bg-violet-500/50'
-                      }`}
-                      aria-label={`Go to certificate ${index + 1}`}
-                    />
-                  ))}
-                </div>
-
-                <button
-                  onClick={nextPage}
-                  className="p-2 rounded-lg bg-violet-500/20 hover:bg-violet-500/30 border border-violet-500/30 transition-colors"
-                  aria-label="Next certificate"
-                >
-                  <ChevronRight className="w-5 h-5 text-violet-400" />
-                </button>
-              </motion.div>
-            )}
-
-            {/* Certificate Counter */}
-            {totalCertificates > 1 && (
-              <div className="text-center">
-                <span className="text-xs sm:text-sm text-foreground/60 font-mono">
-                  Certificate {currentPage + 1} of {totalCertificates}
-                </span>
-              </div>
-            )}
-          </motion.div>
+                </motion.div>
+              </FadeInView>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Certificate Modal */}
+      {/* Certificate Image Modal */}
       <AnimatePresence>
-        {selectedCert !== null && (
+        {selected !== null && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setSelectedCert(null)}
-            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={close}
+            className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4"
+            role="dialog"
+            aria-modal
+            aria-label={CERTIFICATIONS[selected].title}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: 'spring', damping: 25 }}
+              initial={{ scale: 0.95, opacity: 0, y: 16 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 16 }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative max-w-4xl w-full bg-gradient-to-br from-violet-950/50 to-fuchsia-950/50 rounded-2xl border border-violet-500/30 p-4 sm:p-6 backdrop-blur-md max-h-[90vh] overflow-y-auto"
+              className="relative max-w-3xl w-full rounded-2xl border border-border bg-card shadow-2xl overflow-hidden"
             >
-              {/* Close Button */}
               <button
-                onClick={() => setSelectedCert(null)}
-                className="absolute top-4 right-4 p-2 rounded-lg bg-violet-500/20 hover:bg-violet-500/30 transition-colors border border-violet-500/30 z-10"
-                aria-label="Close certificate"
+                onClick={close}
+                className="absolute top-4 right-4 z-10 w-8 h-8 rounded-md border border-border bg-background flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label="Close"
               >
-                <X className="w-5 h-5 text-violet-400" />
+                <X className="w-3.5 h-3.5" />
               </button>
 
-              {/* Certificate Image */}
-              <div className="flex justify-center p-4">
-                <div className="max-w-lg w-full">
-                  <img
-                    src={certifications[selectedCert].image}
-                    alt={certifications[selectedCert].title}
-                    className="w-full h-auto rounded-lg border border-violet-500/30"
-                  />
-                </div>
+              <div className="p-6">
+                <p className="font-mono text-[0.62rem] text-muted-foreground uppercase tracking-wider mb-1">
+                  {CERTIFICATIONS[selected].provider}
+                </p>
+                <h3 className="text-lg font-semibold text-foreground mb-4">
+                  {CERTIFICATIONS[selected].title}
+                </h3>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={CERTIFICATIONS[selected].image}
+                  alt={CERTIFICATIONS[selected].title}
+                  className="w-full h-auto rounded-lg border border-border"
+                />
+                <p className="font-mono text-[0.62rem] text-muted-foreground mt-3 text-right">
+                  {CERTIFICATIONS[selected].date}
+                </p>
               </div>
             </motion.div>
           </motion.div>

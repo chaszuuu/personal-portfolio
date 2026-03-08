@@ -8,32 +8,16 @@ interface FadeInViewProps {
   delay?: number;
   duration?: number;
   y?: number;
-  x?: number;
-  scale?: number;
   className?: string;
 }
 
-export function FadeInView({ 
-  children, 
-  delay = 0, 
-  duration = 0.8,
-  y = 50,
-  x = 0,
-  scale = 0.9,
-  className = '' 
-}: FadeInViewProps) {
+export function FadeInView({ children, delay = 0, duration = 0.6, y = 20, className = '' }: FadeInViewProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y, x, scale }}
-      whileInView={{ opacity: 1, y: 0, x: 0, scale: 1 }}
-      transition={{ 
-        duration, 
-        delay,
-        type: "spring",
-        stiffness: 100,
-        damping: 15
-      }}
-      viewport={{ once: false, amount: 0.2 }}
+      initial={{ opacity: 0, y }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration, delay, ease: [0.22, 1, 0.36, 1] }}
+      viewport={{ once: false, amount: 0.15 }}
       className={className}
     >
       {children}

@@ -1,459 +1,397 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Terminal, X, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
-import { useState } from 'react';
+import { X, ChevronLeft, ChevronRight, ExternalLink, Github, ArrowUpRight } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
+import { useTheme } from 'next-themes';
+import { FadeInView } from './fade-in-view';
+
+export interface Project {
+  title: string;
+  summary: string;
+  images: string[];
+  description: string;
+  technologies: string[];
+  features: string[];
+  link: string;
+  github?: string;
+  buttonText: string;
+  lightLogo?: string;
+}
+
+const PROJECTS: Project[] = [
+  {
+    title: 'Yomuzuu',
+    summary: 'Full-stack manga reader & aggregator with multi-source scraping',
+    images: ['img/yomuzuu_logo.png', 'img/yomuzuu_hero.png', 'img/yomuzuu_manga.png', 'img/yomuzuu_read.png', 'img/yomuzuu_browse.png', 'img/yomuzuu_bookmark.png'],
+    description:
+      'A full-stack manga reader web application integrating web scraping (MangaFreak) and the MyAnimeList API for metadata aggregation. Features a RESTful Flask backend with scheduled background jobs, rate limiting, and optimized image delivery via CDN redirect. The React frontend offers a dual-mode chapter reader (scroll/paginated), real-time search, genre filtering, and persistent bookmarks.',
+    technologies: ['React', 'Flask', 'PostgreSQL', 'Python', 'REST API', 'Redis', 'Gunicorn', 'Render'],
+    features: [
+      'Multi-source manga aggregation via MangaFreak scraping',
+      'MyAnimeList API integration for rich metadata',
+      'Dual-mode chapter reader — scroll & paginated',
+      'Real-time search with genre filtering',
+      'Persistent bookmarks & reading progress',
+      'Scheduled background jobs & rate limiting',
+      'Optimized image delivery via CDN redirect',
+    ],
+    link: 'https://yomuzuu.onrender.com',
+    buttonText: 'Visit Website',
+  },
+  {
+    title: 'AttachMates',
+    summary: 'AI-powered dating app focused on compatibility matchmaking',
+    images: [
+      'img/attachmates_logo.png',
+      'img/attachmates1.jpg',
+      'img/attachmates2.jpg',
+      'img/attachmates3.jpg',
+      'img/attachmates4.jpg',
+      'img/attachmates5.jpg',
+    ],
+    description:
+      'An AI-powered dating application that intelligently matches users based on attachment style, love language, and preferred gender. Designed with a mobile-first approach and secure user verification.',
+    technologies: ['Flutter', 'Python (FastAPI)', 'Firebase Auth', 'Firebase Firestore', 'Supabase Storage', 'Figma'],
+    features: [
+      'Compatibility-based matchmaking algorithm',
+      'Attachment style and love language assessments',
+      'Secure authentication and profile verification',
+      'Real-time data synchronization',
+    ],
+    link: 'http://getattachmates.vercel.app',
+    buttonText: 'View App',
+  },
+  {
+    title: 'Personal Portfolio',
+    summary: 'Portfolio with modern UI, animations, and interactive project modals',
+    images: ['img/portfolio_logo.png'],
+    description:
+      'A modern personal portfolio showcasing projects, skills, and experience with smooth animations, interactive components, and a dark/light theme toggle.',
+    technologies: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Framer Motion', 'Vercel'],
+    features: [
+      'Dark / light mode toggle',
+      'Geometric intro animation',
+      'Interactive project modals',
+      'Fully responsive layout',
+    ],
+    link: 'https://charlesvincentpanlilio.vercel.app',
+    buttonText: 'Visit Website',
+  },
+  {
+    title: 'Tanim',
+    summary: 'CRUD web app with real-time weather API integration',
+    images: ['img/tanim_logo.png', 'img/tanim-hero.png', 'img/tanim-dashboard.png'],
+    lightLogo: 'img/tanim_logo_2.png',
+    description:
+      'A full CRUD web application integrated with a Weather API to provide real-time weather updates alongside dynamic data management.',
+    technologies: ['HTML', 'CSS', 'JavaScript', 'PHP', 'Weather API'],
+    features: [
+      'Full Create, Read, Update, Delete operations',
+      'Third-party Weather API integration',
+      'Dynamic content rendering',
+    ],
+    link: '',
+    buttonText: 'Visit Website',
+  },
+  {
+    title: 'CCS College Website',
+    summary: 'Frontend website for the College of Computing Studies',
+    images: ['img/college_of_computing_studies_logo.png'],
+    description:
+      'A frontend-only informational website for the College of Computing Studies with responsive design and structured academic content.',
+    technologies: ['HTML', 'CSS', 'JavaScript'],
+    features: ['Responsive layout', 'Organized academic content', 'Clean navigation'],
+    link: 'https://collegeofcomputingstudiespsu.vercel.app/',
+    buttonText: 'Visit Website',
+  },
+];
+
+function ProjectLogo({ project, size }: { project: Project; size: number }) {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const src =
+    mounted && resolvedTheme === 'light' && project.lightLogo
+      ? project.lightLogo
+      : project.images[0];
+  return (
+    <Image src={src} alt={project.title} width={size} height={size} className="object-contain p-1" />
+  );
+}
 
 export function Projects() {
-  const [selectedProject, setSelectedProject] = useState<number | null>(null);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isImageZoomed, setIsImageZoomed] = useState(false);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [imgIdx, setImgIdx] = useState(0);
+  const [zoomed, setZoomed] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
-  const projects = [
-    {
-      title: 'AttachMates',
-      summary: 'AI-powered dating app focused on compatibility matchmaking',
-      images: [
-        'img/attachmates_logo.png',
-        'img/attachmates1.jpg',
-        'img/attachmates2.jpg',
-        'img/attachmates3.jpg',
-        'img/attachmates4.jpg',
-        'img/attachmates5.jpg',
-        'img/attachmates6.jpg',
-        'img/attachmates7.jpg',
-        'img/attachmates8.jpg',
-        'img/attachmates9.jpg'
-      ],
-      description: 'An AI-powered dating application that intelligently matches users based on attachment style, love language, and preferred gender. Designed with a mobile-first approach and secure user verification.',
-      technologies: ['Flutter', 'Python (FastAPI)', 'Firebase Authentication', 'Firebase Firestore', 'Supabase Storage', 'Figma'],
-      features: [
-        'Compatibility-based matchmaking algorithm',
-        'Attachment style and love language assessments',
-        'Secure authentication and profile verification',
-        'Real-time data synchronization',
-      ],
-      link: 'http://getattachmates.vercel.app',
-      buttonText: 'View App',
-    },
-    {
-      title: 'Tanim',
-      summary: 'CRUD web app with real-time weather API integration',
-      images: [
-        'img/tanim_logo.png',
-        'img/tanim-hero.png',
-        'img/tanim-dashboard.png',
-      ],
-      description: 'A full CRUD web application integrated with a Weather API to provide real-time weather updates alongside dynamic data management.',
-      technologies: ['HTML', 'CSS', 'JavaScript', 'PHP', 'Weather API'],
-      features: [
-        'Create, Read, Update, Delete operations',
-        'Third-party API integration',
-        'Dynamic content rendering',
-      ],
-      link: '',
-      buttonText: 'Visit Website',
-    },
-    {
-      title: 'College of Computing Studies Website',
-      summary: 'Frontend website for the College of Computing Studies',
-      images: ['img/college_of_computing_studies_logo.png'],
-      description: 'A frontend-only informational website developed for the College of Computing Studies with a focus on responsive design and structured content.',
-      technologies: ['HTML', 'CSS', 'JavaScript'],
-      features: [
-        'Responsive layout',
-        'Organized academic content',
-        'Clean navigation',
-      ],
-      link: 'https://collegeofcomputingstudiespsu.vercel.app/',
-      buttonText: 'Visit Website',
-    },
-    {
-      title: 'Personal Portfolio Website',
-      summary: 'Personal portfolio with modern UI and animations',
-      images: ['img/portfolio_logo.png'],
-      description: 'A modern personal portfolio showcasing projects, skills, and experience with smooth animations and interactive components.',
-      technologies: ['Next.js (React)', 'Tailwind CSS', 'Framer Motion', 'TypeScript', 'Vercel'],
-      features: [
-        'Animated sections and transitions',
-        'Interactive project modals',
-        'Responsive and performance-optimized UI',
-      ],
-      link: '#',
-      buttonText: 'Visit Website',
-    },
-  ];
+  useEffect(() => setMounted(true), []);
 
-  const totalProjects = projects.length;
-  const currentProject = projects[currentPage];
+  const close = useCallback(() => { setSelected(null); setZoomed(false); }, []);
 
-  const nextPage = () => {
-    setCurrentPage((prev) => (prev + 1) % totalProjects);
-  };
+  useEffect(() => {
+    document.body.style.overflow = selected !== null ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [selected]);
 
-  const prevPage = () => {
-    setCurrentPage((prev) => (prev - 1 + totalProjects) % totalProjects);
-  };
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [close]);
 
-  const nextImage = (e: React.MouseEvent) => {
+  const openProject = (i: number) => { setSelected(i); setImgIdx(0); setZoomed(false); };
+
+  const prevImg = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (selectedProject !== null) {
-      const totalImages = projects[selectedProject].images.length;
-      setCurrentImageIndex((prev) => (prev + 1) % totalImages);
-    }
+    if (selected === null) return;
+    setImgIdx((p) => (p - 1 + PROJECTS[selected].images.length) % PROJECTS[selected].images.length);
   };
-
-  const prevImage = (e: React.MouseEvent) => {
+  const nextImg = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (selectedProject !== null) {
-      const totalImages = projects[selectedProject].images.length;
-      setCurrentImageIndex((prev) => (prev - 1 + totalImages) % totalImages);
-    }
+    if (selected === null) return;
+    setImgIdx((p) => (p + 1) % PROJECTS[selected].images.length);
   };
 
-  const openProject = (index: number) => {
-    setSelectedProject(index);
-    setCurrentImageIndex(0);
-    setIsImageZoomed(false);
-  };
-
-  const closeModal = () => {
-    setSelectedProject(null);
-    setIsImageZoomed(false);
-  };
+  const getModalLogoSrc = (project: Project) =>
+    mounted && resolvedTheme === 'light' && project.lightLogo
+      ? project.lightLogo
+      : project.images[0];
 
   return (
     <>
-      <section id="projects" className="relative flex items-center py-20 sm:py-24 px-4 sm:px-6 min-h-fit">
-        <div className="max-w-4xl mx-auto w-full">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: false }}
-            className="mb-8 sm:mb-10"
-          >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground text-balance">
-              Featured Projects
+      <section id="projects" className="py-24 sm:py-32 border-t border-border">
+        <div className="max-w-5xl mx-auto px-6">
+          <FadeInView>
+            <p className="sec-label">Work</p>
+            <h2 className="text-4xl sm:text-5xl font-display font-normal tracking-tight text-foreground mb-16">
+              Selected <em className="italic text-muted-foreground">Projects</em>
             </h2>
-          </motion.div>
+          </FadeInView>
 
-          {/* Single Terminal Window */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            viewport={{ once: false }}
-            className="space-y-6"
-          >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentPage}
-                initial={{ opacity: 0, x: 100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -100 }}
-                transition={{ duration: 0.5 }}
-                className="rounded-2xl overflow-hidden border border-violet-500/20 bg-black/40 backdrop-blur-sm cursor-pointer hover:border-violet-500/40 transition-colors"
-                onClick={() => openProject(currentPage)}
-              >
-                {/* Terminal Header */}
-                <div className="flex items-center gap-2 px-4 py-3 bg-violet-950/30 border-b border-violet-500/20">
-                  <div className="flex gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                    <div className="w-3 h-3 rounded-full bg-green-500/80" />
-                  </div>
-                  <div className="flex items-center gap-2 ml-2">
-                    <Terminal className="w-3 h-3 text-foreground/60" />
-                    <span className="text-xs font-mono text-foreground/60">
-                      ~/charlesvincent/project-{currentPage + 1}
-                    </span>
-                  </div>
-                </div>
+          {/* Project list — numbered rows */}
+          <div className="space-y-0">
+            {PROJECTS.map((project, i) => (
+              <FadeInView key={project.title} delay={i * 0.06}>
+                <motion.div
+                  onClick={() => openProject(i)}
+                  whileHover="hover"
+                  className="group grid grid-cols-[48px_1fr_auto] sm:grid-cols-[48px_64px_1fr_auto] items-center gap-4 sm:gap-6 py-5 border-t border-border cursor-pointer"
+                >
+                  {/* Index */}
+                  <span className="font-mono text-[0.6rem] text-muted-foreground/50 tracking-wider">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
 
-                {/* Terminal Content */}
-                <div className="p-6 sm:p-8 font-mono text-xs sm:text-sm space-y-4">
-                  {/* Command */}
-                  <div className="flex items-start gap-2">
-                    <span className="text-violet-400">$</span>
-                    <span className="text-green-400">cat project.json</span>
+                  {/* Logo — hidden on mobile */}
+                  <div className="hidden sm:flex w-12 h-12 rounded-lg border border-border bg-card items-center justify-center overflow-hidden shrink-0 group-hover:border-ring/40 transition-colors">
+                    <ProjectLogo project={project} size={48} />
                   </div>
 
-                  {/* Terminal Output - Project as JSON-like format */}
-                  <div className="pl-4 space-y-3 text-foreground/80">
-                    <div className="text-foreground/60">{"{"}</div>
-
-                    <div className="pl-4 space-y-2">
-                      {/* Project Title */}
-                      <div className="flex items-start gap-2">
-                        <span className="text-cyan-400">"title"</span>
-                        <span className="text-foreground/60">:</span>
-                        <span className="text-yellow-400 flex-1 break-words">"{currentProject.title}"</span>
-                        <span className="text-foreground/60">,</span>
-                      </div>
-
-                      {/* Summary */}
-                      <div className="flex items-start gap-2">
-                        <span className="text-cyan-400">"summary"</span>
-                        <span className="text-foreground/60">:</span>
-                        <span className="text-yellow-400 flex-1 break-words">"{currentProject.summary}"</span>
-                        <span className="text-foreground/60">,</span>
-                      </div>
-
-                      {/* Tech Stack Count */}
-                      <div className="flex items-start gap-2">
-                        <span className="text-cyan-400">"technologies"</span>
-                        <span className="text-foreground/60">:</span>
-                        <span className="text-yellow-400">{currentProject.technologies.length}</span>
-                        <span className="text-foreground/60">,</span>
-                      </div>
-
-                      {/* View Action */}
-                      <div className="flex items-start gap-2">
-                        <span className="text-cyan-400">"action"</span>
-                        <span className="text-foreground/60">:</span>
-                        <span className="text-green-400">"click_to_view_details"</span>
+                  {/* Text */}
+                  <div className="min-w-0">
+                    <div className="flex items-baseline gap-3 mb-1.5 flex-wrap">
+                      <h3 className="text-sm font-semibold text-foreground tracking-tight">
+                        {project.title}
+                      </h3>
+                      <div className="hidden md:flex items-center gap-1.5 flex-wrap">
+                        {project.technologies.slice(0, 3).map((t) => (
+                          <span key={t} className="font-mono text-[0.55rem] px-1.5 py-0.5 rounded border border-border bg-background text-muted-foreground">
+                            {t}
+                          </span>
+                        ))}
+                        {project.technologies.length > 3 && (
+                          <span className="font-mono text-[0.55rem] text-muted-foreground/60">
+                            +{project.technologies.length - 3}
+                          </span>
+                        )}
                       </div>
                     </div>
-
-                    <div className="text-foreground/60">{"}"}</div>
+                    <p className="text-xs text-muted-foreground truncate max-w-sm sm:max-w-none">
+                      {project.summary}
+                    </p>
                   </div>
 
-                  {/* Success Message */}
+                  {/* Arrow */}
                   <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="pt-2 flex items-center gap-2 text-green-400"
+                    variants={{ hover: { x: 2, y: -2 } }}
+                    transition={{ duration: 0.15 }}
+                    className="text-muted-foreground group-hover:text-foreground transition-colors shrink-0"
                   >
-                    <span>✓</span>
-                    <span>Project loaded</span>
+                    <ArrowUpRight className="w-4 h-4" />
                   </motion.div>
-
-                  {/* Cursor */}
-                  <div className="flex items-start gap-2 pt-2">
-                    <span className="text-violet-400">$</span>
-                    <span className="text-foreground/60 animate-pulse">▊</span>
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-
-            {/* Pagination Controls */}
-            {totalProjects > 1 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="flex items-center justify-center gap-4"
-              >
-                <button
-                  onClick={prevPage}
-                  className="p-2 rounded-lg bg-violet-500/20 hover:bg-violet-500/30 border border-violet-500/30 transition-colors"
-                  aria-label="Previous project"
-                >
-                  <ChevronLeft className="w-5 h-5 text-violet-400" />
-                </button>
-
-                <div className="flex items-center gap-2">
-                  {Array.from({ length: totalProjects }).map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentPage(index)}
-                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                        index === currentPage
-                          ? 'bg-violet-400 w-8'
-                          : 'bg-violet-500/30 hover:bg-violet-500/50'
-                      }`}
-                      aria-label={`Go to project ${index + 1}`}
-                    />
-                  ))}
-                </div>
-
-                <button
-                  onClick={nextPage}
-                  className="p-2 rounded-lg bg-violet-500/20 hover:bg-violet-500/30 border border-violet-500/30 transition-colors"
-                  aria-label="Next project"
-                >
-                  <ChevronRight className="w-5 h-5 text-violet-400" />
-                </button>
-              </motion.div>
-            )}
-
-            {/* Project Counter */}
-            {totalProjects > 1 && (
-              <div className="text-center">
-                <span className="text-xs sm:text-sm text-foreground/60 font-mono">
-                  Project {currentPage + 1} of {totalProjects}
-                </span>
-              </div>
-            )}
-          </motion.div>
+                </motion.div>
+              </FadeInView>
+            ))}
+            <div className="border-t border-border" />
+          </div>
         </div>
       </section>
 
-      {/* Project Modal */}
+      {/* ── Modal — fixed size, scrollable details, sticky button ── */}
       <AnimatePresence>
-        {selectedProject !== null && (
+        {selected !== null && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={closeModal}
-            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={close}
+            className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4"
+            role="dialog"
+            aria-modal
+            aria-label={PROJECTS[selected].title}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: 'spring', damping: 25 }}
+              initial={{ scale: 0.95, opacity: 0, y: 16 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 16 }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative max-w-5xl w-full bg-gradient-to-br from-violet-950/50 to-fuchsia-950/50 rounded-2xl border border-violet-500/30 backdrop-blur-md max-h-[90vh] overflow-hidden"
+              className="relative w-full rounded-2xl border border-border bg-card shadow-2xl"
+              style={{ maxWidth: '900px', height: '580px' }}
             >
-              {/* Close Button */}
+              {/* Close */}
               <button
-                onClick={closeModal}
-                className="absolute top-4 right-4 p-2 rounded-lg bg-violet-500/20 hover:bg-violet-500/30 transition-colors border border-violet-500/30 z-20"
-                aria-label="Close project"
+                onClick={close}
+                className="absolute top-4 right-4 z-20 w-8 h-8 rounded-md border border-border bg-background flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Close"
               >
-                <X className="w-5 h-5 text-violet-400" />
+                <X className="w-3.5 h-3.5" />
               </button>
 
-              <div className="p-4 sm:p-6 overflow-y-auto max-h-[90vh] scrollbar-hide">
-                {/* Two Column Layout */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                  {/* Left Column - Image Carousel */}
-                  <div className="flex items-start justify-center pt-8 lg:pt-0">
-                    <div className="relative w-full max-w-sm">
-                      <div 
-                        className="relative aspect-square rounded-lg overflow-hidden border border-violet-500/30 bg-gradient-to-br from-violet-500/10 to-purple-500/10 cursor-pointer hover:border-violet-400/50 transition-colors"
-                        onClick={() => setIsImageZoomed(true)}
+              <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
+
+                {/* ── Left: image pane, fixed, no scroll ── */}
+                <div className="relative bg-background rounded-l-2xl border-r border-border overflow-hidden hidden lg:block">
+                  <div className="relative w-full h-full cursor-zoom-in" onClick={() => setZoomed(true)}>
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={imgIdx}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute inset-0"
                       >
-                        <AnimatePresence mode="wait">
-                          <motion.div
-                            key={currentImageIndex}
-                            initial={{ opacity: 0, x: 100 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -100 }}
-                            transition={{ duration: 0.3 }}
-                            className="absolute inset-0"
-                          >
-                            <Image
-                              src={projects[selectedProject].images[currentImageIndex]}
-                              alt={`${projects[selectedProject].title} - Image ${currentImageIndex + 1}`}
-                              fill
-                              className="object-contain p-4"
-                              sizes="(max-width: 768px) 100vw, 400px"
-                            />
-                          </motion.div>
-                        </AnimatePresence>
+                        <Image
+                          src={imgIdx === 0 ? getModalLogoSrc(PROJECTS[selected]) : PROJECTS[selected].images[imgIdx]}
+                          alt={`${PROJECTS[selected].title} ${imgIdx + 1}`}
+                          fill
+                          className="object-contain p-8"
+                          sizes="50vw"
+                        />
+                      </motion.div>
+                    </AnimatePresence>
 
-                        {/* Navigation Arrows - Only show if multiple images */}
-                        {projects[selectedProject].images.length > 1 && (
-                          <>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                prevImage(e);
-                              }}
-                              className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-violet-500/30 hover:bg-violet-500/50 border border-violet-500/50 transition-colors backdrop-blur-sm z-10"
-                              aria-label="Previous image"
-                            >
-                              <ChevronLeft className="w-4 h-4 text-white" />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                nextImage(e);
-                              }}
-                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-violet-500/30 hover:bg-violet-500/50 border border-violet-500/50 transition-colors backdrop-blur-sm z-10"
-                              aria-label="Next image"
-                            >
-                              <ChevronRight className="w-4 h-4 text-white" />
-                            </button>
-                          </>
-                        )}
+                    {PROJECTS[selected].images.length > 1 && (
+                      <>
+                        <button onClick={prevImg} className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-md border border-border bg-background/80 backdrop-blur flex items-center justify-center text-muted-foreground hover:text-foreground z-10">
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <button onClick={nextImg} className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-md border border-border bg-background/80 backdrop-blur flex items-center justify-center text-muted-foreground hover:text-foreground z-10">
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                        <span className="absolute bottom-4 left-1/2 -translate-x-1/2 font-mono text-[0.6rem] text-muted-foreground bg-background/80 px-2 py-1 rounded border border-border">
+                          {imgIdx + 1} / {PROJECTS[selected].images.length}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
 
-                        {/* Click to zoom hint */}
-                        <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-black/60 backdrop-blur-sm border border-violet-500/30">
-                          <span className="text-xs text-white/70">Click to zoom</span>
-                        </div>
-                      </div>
+                {/* ── Right: scrollable details + sticky button ── */}
+                <div className="flex flex-col h-full min-h-0 rounded-r-2xl rounded-l-2xl lg:rounded-l-none overflow-hidden">
+                  {/* Scrollable content */}
+                  <div className="flex-1 overflow-y-auto p-6 lg:p-8 space-y-5 min-h-0">
 
-                      {/* Image Counter */}
-                      {projects[selectedProject].images.length > 1 && (
-                        <div className="mt-2 text-center">
-                          <span className="text-xs text-white/60 font-mono">
-                            {currentImageIndex + 1} / {projects[selectedProject].images.length}
-                          </span>
-                        </div>
+                    {/* Mobile image strip */}
+                    <div className="lg:hidden relative bg-background rounded-lg border border-border overflow-hidden aspect-video mb-2 cursor-zoom-in" onClick={() => setZoomed(true)}>
+                      <AnimatePresence mode="wait">
+                        <motion.div key={imgIdx} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0">
+                          <Image
+                            src={imgIdx === 0 ? getModalLogoSrc(PROJECTS[selected]) : PROJECTS[selected].images[imgIdx]}
+                            alt={`${PROJECTS[selected].title} ${imgIdx + 1}`}
+                            fill
+                            className="object-contain p-4"
+                            sizes="100vw"
+                          />
+                        </motion.div>
+                      </AnimatePresence>
+                      {PROJECTS[selected].images.length > 1 && (
+                        <>
+                          <button onClick={prevImg} className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md border border-border bg-background/80 backdrop-blur flex items-center justify-center text-muted-foreground z-10">
+                            <ChevronLeft className="w-3.5 h-3.5" />
+                          </button>
+                          <button onClick={nextImg} className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md border border-border bg-background/80 backdrop-blur flex items-center justify-center text-muted-foreground z-10">
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                        </>
                       )}
                     </div>
-                  </div>
 
-                  {/* Right Column - Project Info */}
-                  <div className="space-y-4">
                     <div>
-                      <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
-                        {projects[selectedProject].title}
+                      <h3 className="text-xl font-semibold text-foreground tracking-tight mb-2">
+                        {PROJECTS[selected].title}
                       </h3>
-                      <p className="text-sm sm:text-base text-foreground/80 leading-relaxed">
-                        {projects[selectedProject].description}
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {PROJECTS[selected].description}
                       </p>
                     </div>
 
-                    {/* Tech Stack */}
                     <div>
-                      <h4 className="text-xs sm:text-sm font-semibold text-violet-400 uppercase tracking-wide mb-2">
-                        Tech Stack
-                      </h4>
+                      <p className="font-mono text-[0.62rem] text-muted-foreground uppercase tracking-wider mb-2">Tech Stack</p>
                       <div className="flex flex-wrap gap-1.5">
-                        {projects[selectedProject].technologies.map((tech) => (
-                          <span
-                            key={tech}
-                            className="px-2.5 py-1 rounded-full bg-violet-500/20 text-violet-300 text-xs font-medium border border-violet-500/30 hover:bg-violet-500/30 transition-colors"
-                          >
-                            {tech}
+                        {PROJECTS[selected].technologies.map((t) => (
+                          <span key={t} className="font-mono text-[0.6rem] px-2 py-1 rounded border border-border bg-background text-muted-foreground">
+                            {t}
                           </span>
                         ))}
                       </div>
                     </div>
 
-                    {/* Key Features */}
                     <div>
-                      <h4 className="text-xs sm:text-sm font-semibold text-violet-400 uppercase tracking-wide mb-2">
-                        Key Features
-                      </h4>
+                      <p className="font-mono text-[0.62rem] text-muted-foreground uppercase tracking-wider mb-2">Key Features</p>
                       <ul className="space-y-1.5">
-                        {projects[selectedProject].features.map((feature, idx) => (
-                          <li
-                            key={idx}
-                            className="text-xs sm:text-sm text-foreground/70 flex items-start gap-2"
-                          >
-                            <span className="text-violet-400 flex-shrink-0 mt-0.5">•</span>
-                            <span>{feature}</span>
+                        {PROJECTS[selected].features.map((f) => (
+                          <li key={f} className="text-sm text-muted-foreground flex gap-2">
+                            <span className="text-foreground/30 mt-1 shrink-0">—</span>
+                            <span>{f}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
+                  </div>
 
-                    {/* Action Button */}
-                    {projects[selectedProject].link && (
-                      <div className="pt-2">
-                        <motion.a
-                          href={projects[selectedProject].link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          className="inline-flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white text-sm rounded-lg font-semibold transition-colors shadow-lg shadow-violet-500/20"
-                        >
-                          {projects[selectedProject].buttonText}
-                          <ExternalLink className="w-4 h-4" />
-                        </motion.a>
-                      </div>
+                  {/* ── Sticky action bar ── */}
+                  <div className="shrink-0 border-t border-border px-6 lg:px-8 py-4 bg-card flex items-center gap-2">
+                    {PROJECTS[selected].link ? (
+                      <a
+                        href={PROJECTS[selected].link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-foreground text-background text-sm font-medium hover:opacity-85 transition-opacity"
+                      >
+                        {PROJECTS[selected].buttonText}
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    ) : (
+                      <span className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-border text-muted-foreground text-sm font-medium opacity-50 cursor-not-allowed">
+                        {PROJECTS[selected].buttonText}
+                      </span>
+                    )}
+                    {PROJECTS[selected].github && (
+                      <a
+                        href={PROJECTS[selected].github}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-border text-muted-foreground text-sm font-medium hover:text-foreground hover:bg-accent transition-all"
+                      >
+                        <Github className="w-3.5 h-3.5" />
+                        GitHub
+                      </a>
                     )}
                   </div>
                 </div>
@@ -463,74 +401,28 @@ export function Projects() {
         )}
       </AnimatePresence>
 
-      {/* Image Zoom/Lightbox Modal */}
+      {/* ── Lightbox ── */}
       <AnimatePresence>
-        {isImageZoomed && selectedProject !== null && (
+        {zoomed && selected !== null && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setIsImageZoomed(false)}
-            className="fixed inset-0 bg-black/95 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
+            onClick={() => setZoomed(false)}
+            className="fixed inset-0 z-[60] bg-background/95 backdrop-blur-sm flex items-center justify-center p-4"
           >
-            <button
-              onClick={() => setIsImageZoomed(false)}
-              className="absolute top-4 right-4 p-2 rounded-lg bg-violet-500/20 hover:bg-violet-500/30 transition-colors border border-violet-500/30 z-10"
-              aria-label="Close zoomed image"
-            >
-              <X className="w-6 h-6 text-violet-400" />
+            <button onClick={() => setZoomed(false)} className="absolute top-4 right-4 w-8 h-8 rounded-md border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-foreground">
+              <X className="w-3.5 h-3.5" />
             </button>
-
-            <motion.div
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.8 }}
-              className="relative w-full h-full max-w-6xl max-h-[90vh] flex items-center justify-center"
-              onClick={(e) => e.stopPropagation()}
-            >
+            <div className="relative w-full h-full max-w-5xl max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
               <Image
-                src={projects[selectedProject].images[currentImageIndex]}
-                alt={`${projects[selectedProject].title} - Image ${currentImageIndex + 1}`}
+                src={imgIdx === 0 ? getModalLogoSrc(PROJECTS[selected]) : PROJECTS[selected].images[imgIdx]}
+                alt="Zoomed"
                 fill
                 className="object-contain"
                 sizes="100vw"
               />
-
-              {/* Navigation arrows for zoomed view */}
-              {projects[selectedProject].images.length > 1 && (
-                <>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      prevImage(e);
-                    }}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-violet-500/30 hover:bg-violet-500/50 border border-violet-500/50 transition-colors backdrop-blur-sm z-10"
-                    aria-label="Previous image"
-                  >
-                    <ChevronLeft className="w-6 h-6 text-white" />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      nextImage(e);
-                    }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-violet-500/30 hover:bg-violet-500/50 border border-violet-500/50 transition-colors backdrop-blur-sm z-10"
-                    aria-label="Next image"
-                  >
-                    <ChevronRight className="w-6 h-6 text-white" />
-                  </button>
-                </>
-              )}
-
-              {/* Image counter in zoomed view */}
-              {projects[selectedProject].images.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-black/70 backdrop-blur-sm border border-violet-500/30">
-                  <span className="text-sm text-white font-mono">
-                    {currentImageIndex + 1} / {projects[selectedProject].images.length}
-                  </span>
-                </div>
-              )}
-            </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
