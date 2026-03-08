@@ -3,7 +3,6 @@ import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono, Instrument_Serif } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { ThemeProvider } from '@/components/theme-provider'
-import { IntroAnimation } from '@/components/intro-animation'
 import './globals.css'
 
 const geistSans = Geist({
@@ -67,8 +66,8 @@ export const metadata: Metadata = {
     images: ['/og-image.png'],
   },
   icons: {
-    icon: '/img/frieren.png',
-    apple: '/img/frieren.png',
+    icon: [{ url: '/favicon.png' }],
+    apple: '/favicon.png',
   },
   robots: {
     index: true,
@@ -95,7 +94,6 @@ export default function RootLayout({
     >
       <body className="font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-          <IntroAnimation />
           {children}
           <Analytics />
         </ThemeProvider>

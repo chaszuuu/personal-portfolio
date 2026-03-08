@@ -9,10 +9,12 @@ import { Certifications } from '@/components/certifications';
 import { Contact } from '@/components/contact';
 import { Footer } from '@/components/footer';
 import { AuroraBackground } from '@/components/background';
+import { IntroAnimation } from '@/components/intro-animation';
 
 export default function Home() {
   return (
     <div className="relative bg-background text-foreground" style={{ overflowX: 'clip' }}>
+      <IntroAnimation />
       <AuroraBackground />
       <Navbar />
       <Hero />
