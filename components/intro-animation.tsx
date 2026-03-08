@@ -161,7 +161,7 @@ export function IntroAnimation() {
                 >
                   <div className="h-px w-12 bg-border" />
                   <p className="font-mono text-[0.6rem] tracking-[0.2em] uppercase text-muted-foreground">
-                    Full-Stack Developer
+                    Aspiring Full-Stack Developer
                   </p>
                   <div className="h-px w-12 bg-border" />
                 </motion.div>
