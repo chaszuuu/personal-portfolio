@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowDown } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-const ROLES = ['Aspiring Full-Stack Developer', 'UI/UX Designer'] as const;
+const ROLES = ['Full-Stack Developer', 'UI/UX Designer', 'Vibe Coder'] as const;
 const TYPE_SPEED = 90;
 const DEL_SPEED = 45;
 const PAUSE_MS = 2200;
@@ -58,7 +58,7 @@ export function Hero() {
           className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card text-xs font-mono text-muted-foreground mb-10"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-          Open to opportunities · San Fernando, Pampanga, PH
+          Open to opportunities · San Fernando, PH
         </motion.div>
 
         {/* Heading */}
@@ -165,7 +165,7 @@ export function Hero() {
           e.preventDefault();
           document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
         }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
         aria-label="Scroll to About"
       >
         <motion.div animate={{ y: [0, 6, 0] }} transition={{ duration: 2, repeat: Infinity }}>
