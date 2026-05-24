@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowDown } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-const ROLES = ['Full-Stack Developer', 'UI/UX Designer', 'Vibe Coder'] as const;
+const ROLES = ['Aspiring Full-Stack Developer', 'UI/UX Designer'] as const;
 const TYPE_SPEED = 90;
 const DEL_SPEED = 45;
 const PAUSE_MS = 2200;
